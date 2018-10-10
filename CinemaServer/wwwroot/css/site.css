@@ -1,0 +1,35 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification\ 
+for details on configuring this project to bundle and minify static web assets. */
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+
+
+.div-wh-scrol  {
+    width: 550px;
+}
+
+
+.td1 {
+    width: 250px;
+    /* These are technically the same, but use both */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    /* This is the dangerous one in WebKit, as it breaks things wherever */
+    word-break: break-all;
+    
+}
+
+.td2 {
+    width: 190px;
+    align-content:center;
+
+}
+.td3 {
+    width: 100px;
+    align-content: center;
+}
+

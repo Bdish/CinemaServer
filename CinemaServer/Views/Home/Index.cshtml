@@ -1,0 +1,313 @@
+﻿<html>
+<head>
+    
+    <script src="~/node_modules/jquery/dist/jquery.js" language="javascript" type="text/javascript"></script>
+    <script src="~/node_modules/jquery-ui_1.12/jquery-ui.min.js" language="javascript" type="text/javascript"></script>
+    <!--   <script src="~/node_modules/bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js" language="javascript" type="text/javascript"></script>
+    -->
+
+    <script src="~/js/moment-with-locales.js" language="javascript" type="text/javascript"></script>
+    <script src="~/js/bootstrap-datetimepicker.js" language="javascript" type="text/javascript"></script>
+    <link href='@Url.Content("~/css/site.css")' rel="stylesheet" type="text/css" />
+    <link href='@Url.Content("~/css/bootstrap-datetimepicker.css")' rel="stylesheet" type="text/css" />
+    <link href='@Url.Content("~/node_modules/jquery-ui_1.12/jquery-ui.min.css")' rel="stylesheet" type="text/css" />
+
+    <link href='@Url.Content("~/lib/bootstrap/dist/css/bootstrap.css")' rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div>
+        <p>
+            <label for="firstname">Название фильма: </label>
+            <input type="text" size="40" id="newNameMovie">
+        </p>
+        <p>
+            <label for="date">Дата и время начала: </label>
+            <input type="date" id="DateStart" name="date" />
+            <input type="time" id="TimeStart">
+        </p>
+        <p>
+            <input type="submit" id="btn" value="Создать" onclick="CreateSeance(); return false;" />
+        </p>
+
+    </div>
+
+    <div id="errorAddSeance" class="p-3 mb-2 bg-danger text-white"></div>
+    
+    <div class=" div-wh-scrol">
+        <table id="listSeances" class="table table-bordered table-dark">
+            
+            <thead>
+                <tr>
+                    <td class="td1">Название Фильма</td>
+                    <td class="td2">Время начала</td>
+                    <td class="td3"></td>
+
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+
+
+
+
+
+</body>
+</html>
+
+
+<script src="~/lib/signalr/signalr.js"></script>
+<script type="text/javascript">
+
+    function CreateSeance() {
+        var newSeance =
+        {
+            Name: document.getElementById("newNameMovie").value,
+            Start:/*(*/document.getElementById("DateStart").value +" "+ document.getElementById("TimeStart").value/*).replace(/\s+/g, '')*/
+
+        };
+
+      //  console.log("createSeance " + JSON.stringify(newSeance));
+
+         $.ajax({
+                    url: '@Url.Action("AddSeanseAsync", "Home")',
+             data: { seanse: JSON.stringify(newSeance) },
+                    type: 'POST',
+                    success: function (result) {
+
+                        if (result != "") {
+                            document.getElementById("errorAddSeance").innerHTML = "<p><h2>Ошибки</h2></p>"+result;
+                        }
+                        else {
+                            document.getElementById("errorAddSeance").innerHTML = result;
+                        }
+                    },
+                    error: function () {
+                        alert('ошибка');
+                    }
+                });
+    }
+
+  
+
+
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notify")
+        .build();
+
+    connection.on("notify", function (message) {
+      //  
+        
+
+        var update = JSON.parse(message);
+       
+        var addSeances = update["AddSeances"];
+        var delSeances = update["DelSeances"];
+       // console.log("1" );
+       // console.log("addSeances " + JSON.stringify(addSeances));
+       // console.log("delSeances " + JSON.stringify(delSeances));
+      
+
+        if (addSeances.length != 0) {
+           // console.log("1.1");
+            for (var i = 0; i < addSeances.length; i++) {
+
+              //  console.log("1.2");
+                listSeances.push(addSeances[i]);
+
+                listSeances.sort(function (a, b) {
+                    return (b.Start < a.Start) - (a.Start < b.Start);
+                });
+              //  console.log("1.3");
+              
+              //  console.log("listSeances"+ JSON.stringify(listSeances));
+              //  console.log(JSON.stringify(addSeances[i]) + "  " + JSON.stringify(listSeances.indexOf(addSeances[i]) + 1));
+                AddRowSeance("listSeances", addSeances[i], listSeances.indexOf(addSeances[i]) +1);
+              //  console.log("1.4");
+            }
+
+        }
+       // console.log("2");
+        if (delSeances.length != 0) {
+           
+            for (var i = 0; i < delSeances.length; i++) {
+               
+                listSeances.sort(function (a, b) {
+                    return (b.Start < a.Start) - (a.Start < b.Start);
+                });
+
+                var index = GetIndexArray(listSeances, delSeances[i])
+                   
+                    if (index != -1) {
+                       // DelRowSeance("listSeances", index + 1);
+                        DelElementAboutID(delSeances[i]["Id"]);
+                        listSeances.splice(index, 1);
+
+                    }
+                    else {
+                        alert("Error");
+                    }
+
+
+                }
+                
+            }
+      //  console.log("3");
+    });
+
+    function DelElementAboutID(id) {
+      //  console.log("DelElementAboutID"+id);
+        var tr = document.getElementById(id.toString());
+        tr.remove();
+    }
+
+
+    function DelRowSeance(strTegId, index) {
+
+        var table = document.getElementById(strTegId);
+        table.deleteRow(index);
+
+    }
+
+    function AddAllColumnHeaders(myList) {
+        var columnSet = [];
+
+        for (var i = 0; i < myList.length; i++) {
+            var rowHash = myList[i];
+            for (var key in rowHash) {
+                if ($.inArray(key, columnSet) == -1) {
+                    columnSet.push(key);
+                }
+            }
+        }
+
+
+        return columnSet;
+    }
+
+    function GetIndexArray(list, searchField) {
+        var listKey = AddAllColumnHeaders(searchField);
+        var index = -1;
+        var count = 0;
+
+        for (var i = 0; i < list.length; i++) {
+            for (var j = 0; j < listKey.length; j++) {
+                if (list[listKey[i]] == searchField[listKey[i]]) {
+                    count++;
+
+                } else {
+                    break;
+                }
+
+            }
+            if (count == listKey.length) {
+                index = i;
+                break;
+            }
+            else {
+                count = 0;
+
+            }
+
+        }
+
+        return index;
+
+    }
+
+    connection.start().catch(err => console.error(err));
+
+
+    function AddRowSeance(strTegId, seance, index) {
+      //  console.log("1.3.1");
+        var table = document.getElementById(strTegId);
+      //  console.log("1.3.1.1");
+        var row = table.insertRow(index);
+      //  console.log("1.3.2");
+        //row.setAttribute("class", seance["Id"]);
+        row.setAttribute("id", seance["Id"]);
+
+      //  console.log("1.3.3");
+        var cell1 = row.insertCell(0);
+        cell1.setAttribute("class", "td1");
+        cell1.innerHTML = seance["Name"];
+
+      //  console.log("1.3.4");
+        var cell2 = row.insertCell(1);
+        cell2.innerHTML = seance["Start"];
+        cell2.setAttribute("class", "td2");
+
+     //   console.log("1.3.5");
+        var cell3 = row.insertCell(2);
+        cell3.innerHTML = "<input type='submit' id='btn' value='Удалить' onclick='DelSeanse(" + seance['Id']+"); return false;' />";
+        cell3.setAttribute("class", "td3");
+     //   console.log("1.3.6");
+    }
+
+    //задание текущего времени
+    $(document).ready(function () {
+        var date = new Date();
+
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+
+        if (month < 10) month = "0" + month;
+        if (day < 10) day = "0" + day;
+
+        var today = year + "-" + month + "-" + day;
+        $("#DateStart").attr("value", today);
+    });
+
+
+    function DelSeanse(id) {
+      //  alert(id);
+      //  console.log("delSeanse"+id);
+         $.ajax({
+                    url: '@Url.Action("DelSeanseAsync", "Home")',
+             data: { id:id },
+                    type: 'POST',
+                    success: function (result) {
+                        if (result != "") {
+                           // alert(result)
+                            location.reload();
+                        }
+
+                    },
+                    error: function () {
+                        alert('ошибка');
+                    }
+                });
+    }
+
+
+
+    var listSeances = [];
+
+    
+  function GetAllSeanses() {
+         $.ajax({
+                    url: '@Url.Action("GetAllSeanses", "Home")',
+                    
+                    type: 'POST',
+                    success: function (result) {
+                        listSeances = JSON.parse(result);
+                        listSeances.sort(function (a, b) {
+                            return (b.Start < a.Start) - (a.Start < b.Start);
+                        });
+
+                        for (var i = 0; i < listSeances.length; i++) {
+                            AddRowSeance("listSeances", listSeances[i], i + 1);
+                        }
+
+                    },
+                    error: function () {
+                        alert('ошибка');
+                    }
+                });
+    }
+    GetAllSeanses();
+  
+</script>

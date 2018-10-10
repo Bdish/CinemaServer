@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "devDependencies": {
+    "@aspnet/signalr": "^1.0.0",
+    "jquery": "3.3.1",
+    "bootstrap": "3.3.6",
+    "jquery-ui_1.12": "^1.12.0",
+    "bootstrap-datetimepicker": "0.0.7",
+    "momentjs-rails": ">= 2.9.0",
+    "bootstrap3-datetimepicker-rails":"~> 4.14.30"
+  }
+}
