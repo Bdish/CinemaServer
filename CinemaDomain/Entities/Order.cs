@@ -19,5 +19,8 @@ namespace CinemaDomain.Entities
 
         [Required]
         public int CountPlace { get; set; }//сколько мест
+
+        [Required]
+        public DateTime TicketSales { get; set; } = DateTime.Now;
     }
 }

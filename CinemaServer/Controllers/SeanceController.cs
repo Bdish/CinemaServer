@@ -25,22 +25,36 @@ namespace Web.Controllers
 
         // GET: api/Seance
         [HttpGet]
-        public IEnumerable<Seance> Get()
+        public IActionResult/*IEnumerable<Seance>*/ Get()
         {
-            return _seanceRepo.Get();
+            try
+            {
+                return Ok(_seanceRepo.Get());
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // GET: api/Seance/5
         [HttpGet("{id}", Name = "Get")]
         public IActionResult Get(int id)
         {
-            Seance seance = _seanceRepo.FindById(id);
-            if (seance == null)
+            try
             {
-                return NotFound();
-            }
+                Seance seance = _seanceRepo.FindById(id);
+                if (seance == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(seance);
+                return Ok(seance);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // POST: api/Seance
@@ -48,28 +62,42 @@ namespace Web.Controllers
         
         public IActionResult Post(/*[FromBody]*/ SeanceView seanceView)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                Seance seance = new Seance { Name = seanceView.Name, Start = (DateTime)seanceView.Start };
+
+                _seanceRepo.Create(seance);
+
+                return Ok(seance);
             }
-
-            Seance seance = new Seance { Name = seanceView.Name, Start =(DateTime) seanceView.Start };
-
-            _seanceRepo.Create(seance);
-
-            return Ok(seance);           
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // PUT: api/Seance/5
         [HttpPut("{id}")]
         public IActionResult Put(int id,/* [FromBody]*/SeanceView seanceView)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            if (id != seanceView.Id)
+                if (id != seanceView.Id)
+                {
+                    return BadRequest();
+                }
+            }
+            catch(Exception ex)
             {
                 return BadRequest();
             }
@@ -88,7 +116,7 @@ namespace Web.Controllers
                 }
                 else
                 {
-                    throw;
+                    return BadRequest();
                 }
             }
             
@@ -100,19 +128,26 @@ namespace Web.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-
-            Seance delSeance = _seanceRepo.FindById(id);
-
-            if (delSeance == null)
+            try
             {
-                return NotFound();
+                Seance delSeance = _seanceRepo.FindById(id);
+
+                if (delSeance == null)
+                {
+                    return NotFound();
+                }
+
+                _seanceRepo.Remove(delSeance);
+
+                return Ok(delSeance);
             }
-
-            _seanceRepo.Remove(delSeance);
-
-            return Ok(delSeance);  
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
+        [NonAction]
         private bool SeanceExists(int id)
         {
             return _seanceRepo.Get().Count(x => x.Id == id) > 0;

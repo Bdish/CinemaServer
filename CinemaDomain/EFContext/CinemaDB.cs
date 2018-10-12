@@ -9,8 +9,8 @@ namespace CinemaDomain.EFContext
         public CinemaDB()
         {
            // Database.EnsureDeleted();
-            //Database.EnsureCreated();
-            //Database.Migrate();
+           // Database.EnsureCreated();
+           // Database.Migrate();
         }
 
         public DbSet<Order> Orders { get; set; }

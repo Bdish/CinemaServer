@@ -20,15 +20,29 @@ namespace Web.Controllers
 
         public OrderController(IGenericRepository<Order> orderRepo)
         {
-            _orderRepo = orderRepo;
+            try
+            {
+                _orderRepo = orderRepo;
+            }
+            catch (Exception)
+            {
+               // return BadRequest();
+            }
         }
 
         // GET: api/Order
          [HttpGet]
         [Produces("application/xml")]
-        public IEnumerable<Order> Get()
+        public IActionResult Get()
         {
-            return _orderRepo.Get().ToList();
+            try
+            {
+                return Ok(_orderRepo.Get());
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // GET: api/Order/5
@@ -36,40 +50,61 @@ namespace Web.Controllers
         [Produces("application/xml")]
         public IActionResult Get(int id)
         {
-            Order order = _orderRepo.FindById(id);
-            if (order == null)
+            try
             {
-                return NotFound();
-            }
+                Order order = _orderRepo.FindById(id);
+                if (order == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(order);
+                return Ok(order);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // POST: api/Order
         [HttpPost]
         public IActionResult Post(/*[FromBody]*/ OrderView orderView)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                Order order = new Order { IdSeance = orderView.IdSeance, CountPlace = orderView.CountPlace };
+                _orderRepo.Create(order);
+
+                return Ok(order);
             }
-
-            Order order = new Order { IdSeance = orderView.IdSeance, CountPlace = orderView.CountPlace };
-            _orderRepo.Create(order);
-
-            return Ok(order);
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         // PUT: api/Order/5
         [HttpPut("{id}")]
         public IActionResult Put(int id, OrderView orderView)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            if (id != orderView.Id)
+                if (id != orderView.Id)
+                {
+                    return BadRequest();
+                }
+            }
+            catch(Exception ex)
             {
                 return BadRequest();
             }
@@ -88,7 +123,7 @@ namespace Web.Controllers
                 }
                 else
                 {
-                    throw;
+                    return BadRequest();
                 }
             }
 
@@ -100,17 +135,25 @@ namespace Web.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            Order order = _orderRepo.FindById(id);
-
-            if (order == null)
+            try
             {
-                return NotFound();                
-            }
-            _orderRepo.Remove(order);
+                Order order = _orderRepo.FindById(id);
 
-            return Ok(order);
+                if (order == null)
+                {
+                    return NotFound();
+                }
+                _orderRepo.Remove(order);
+
+                return Ok(order);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
+        [NonAction]
         private bool OrderExists(int id)
         {
             return _orderRepo.Get().Count(x => x.Id == id) > 0;
