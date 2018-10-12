@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using CinemaDomain.EFRepository.Interfaces;
 using CinemaDomain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Web.Models;
 
 namespace Web.Controllers
 {
@@ -31,27 +34,86 @@ namespace Web.Controllers
         // GET: api/Order/5
         [HttpGet("{id}")]
         [Produces("application/xml")]
-        public Order Get(int id)
+        public IActionResult Get(int id)
         {
-            return new Order();
+            Order order = _orderRepo.FindById(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(order);
         }
 
         // POST: api/Order
         [HttpPost]
-        public void Post([FromBody] Order value)
+        public IActionResult Post(/*[FromBody]*/ OrderView orderView)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Order order = new Order { IdSeance = orderView.IdSeance, CountPlace = orderView.CountPlace };
+            _orderRepo.Create(order);
+
+            return Ok();
         }
 
         // PUT: api/Order/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Order value)
+        public IActionResult Put(int id, OrderView orderView)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (id != orderView.Id)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                Order orderOld = _orderRepo.FindById(id);
+                orderOld.IdSeance = orderView.IdSeance;
+                orderOld.CountPlace =orderView.CountPlace;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return StatusCode((int)HttpStatusCode.NoContent);
+            
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            Order order = _orderRepo.FindById(id);
+
+            if (order == null)
+            {
+                return NotFound();                
+            }
+            _orderRepo.Remove(order);
+
+            return Ok(order);
+        }
+
+        private bool OrderExists(int id)
+        {
+            return _orderRepo.Get().Count(x => x.Id == id) > 0;
         }
     }
 }

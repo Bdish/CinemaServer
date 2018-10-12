@@ -15,7 +15,7 @@ namespace Web.Models
         [Required(ErrorMessage = "Введите название фильма.")]
         public string Name { get; set; }
 
-       // [JsonConverter(typeof(DateTimeConverter))]
+       
         [Required(ErrorMessage = "Укажите дату и время")]
         public DateTime? Start { get; set; }//время начала киносеанса
     }

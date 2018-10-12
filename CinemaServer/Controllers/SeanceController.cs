@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using CinemaDomain.EFRepository.Interfaces;
 using CinemaDomain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Web.Models;
 
 namespace Web.Controllers
 {
@@ -29,35 +32,90 @@ namespace Web.Controllers
 
         // GET: api/Seance/5
         [HttpGet("{id}", Name = "Get")]
-        public Seance Get(int id)
+        public IActionResult Get(int id)
         {
-            return _seanceRepo.FindById(id);
+            Seance seance = _seanceRepo.FindById(id);
+            if (seance == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(seance);
         }
 
         // POST: api/Seance
         [HttpPost]
-        public void Post([FromBody] Seance seance)
+        
+        public IActionResult Post(/*[FromBody]*/ SeanceView seanceView)
         {
-             _seanceRepo.Create(seance);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Seance seance = new Seance { Name = seanceView.Name, Start =(DateTime) seanceView.Start };
+
+            _seanceRepo.Create(seance);
+
+            return Ok();           
         }
 
         // PUT: api/Seance/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]Seance seance)
+        public IActionResult Put(int id,/* [FromBody]*/SeanceView seanceView)
         {
-            if (id == seance.Id)
+            if (!ModelState.IsValid)
             {
-                _seanceRepo.Update(seance);
+                return BadRequest(ModelState);
             }
-           
+
+            if (id != seanceView.Id)
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                Seance  seanceOld = _seanceRepo.FindById(id);
+                seanceOld.Name = seanceView.Name;
+                seanceOld.Start =(DateTime) seanceView.Start;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SeanceExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            
+            return StatusCode((int)HttpStatusCode.NoContent);
+
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+
             Seance delSeance = _seanceRepo.FindById(id);
+
+            if (delSeance == null)
+            {
+                return NotFound();
+            }
+
             _seanceRepo.Remove(delSeance);
+
+            return Ok(delSeance);  
+        }
+
+        private bool SeanceExists(int id)
+        {
+            return _seanceRepo.Get().Count(x => x.Id == id) > 0;
         }
     }
 }
