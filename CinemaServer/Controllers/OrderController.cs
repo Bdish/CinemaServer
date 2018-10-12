@@ -28,7 +28,7 @@ namespace Web.Controllers
         [Produces("application/xml")]
         public IEnumerable<Order> Get()
         {
-            return new Order[] { new Order() };
+            return _orderRepo.Get().ToList();
         }
 
         // GET: api/Order/5
@@ -57,7 +57,7 @@ namespace Web.Controllers
             Order order = new Order { IdSeance = orderView.IdSeance, CountPlace = orderView.CountPlace };
             _orderRepo.Create(order);
 
-            return Ok();
+            return Ok(order);
         }
 
         // PUT: api/Order/5

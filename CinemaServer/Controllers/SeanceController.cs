@@ -57,7 +57,7 @@ namespace Web.Controllers
 
             _seanceRepo.Create(seance);
 
-            return Ok();           
+            return Ok(seance);           
         }
 
         // PUT: api/Seance/5
