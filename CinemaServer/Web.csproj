@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CinemaBusinessLogic\CinemaBusinessLogic.csproj" />
     <ProjectReference Include="..\CinemaDomain\CinemaDomain.csproj" />
   </ItemGroup>
 

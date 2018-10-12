@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CinemaBusinessLogic;
 using CinemaDomain.EFContext;
 using CinemaDomain.EFRepository.Implementations;
 using CinemaDomain.EFRepository.Interfaces;
@@ -45,6 +46,8 @@ namespace CinemaServer
             // DbContext cinemaContext = new CinemaDB();
            // services.AddSingleton<DbContext>(cinemaContext);
              services.AddTransient<DbContext, CinemaDB>();
+
+            services.AddTransient<ManagerSeances, ManagerSeances>();
 
             services.AddTransient<IGenericRepository<Seance>, SeanceRepository>();
 

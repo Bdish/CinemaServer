@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using CinemaBusinessLogic;
 using CinemaDomain.EFRepository.Interfaces;
 using CinemaDomain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -16,9 +17,9 @@ namespace Web.Controllers
     [ApiController]
     public class SeanceController : ControllerBase
     {
-        private IGenericRepository<Seance> _seanceRepo;
+        private ManagerSeances _seanceRepo;
 
-        public SeanceController(IGenericRepository<Seance> seanceRepo)
+        public SeanceController(ManagerSeances seanceRepo)
         {
             _seanceRepo = seanceRepo;
         }
@@ -29,7 +30,8 @@ namespace Web.Controllers
         {
             try
             {
-                return Ok(_seanceRepo.Get());
+                //return Ok(_seanceRepo.Get());
+                return Ok(_seanceRepo.CurrentSeanceAtDateTime());
             }
             catch(Exception ex)
             {
